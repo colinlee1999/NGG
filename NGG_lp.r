@@ -15,7 +15,6 @@ NGG_lp <- function(
   M = 10000
   )
 {
-  print("start NGG_lp")
   G = nrow(E_Set)
   n = ncol(E_Set)
 
@@ -26,6 +25,19 @@ NGG_lp <- function(
 
   # 'sum_dgl_square_by_l' is an G * 1 matrix, the summation of every squared elements of 'data_matrix_of_E_Set' by row
   sum_dgl_square_by_l = apply(data_matrix_of_E_Set^2,1,sum, na.rm = TRUE)
+
+  get_A_B <- function(
+    beta, 
+    sum_dgl_by_l_i,
+    sum_dgl_square_by_l_i,
+    n,
+    mu_g
+    )
+  {
+    result = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+
+    return(result)
+  }
 
   func_over_expressed <- function(
     x,
@@ -40,7 +52,7 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = c(x)
-    A = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = 1 / (A)^(n/2+alpha)
     return(result)
@@ -59,9 +71,9 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = c(x)
-    A = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
-    result = log(A) / (A)^(n/2+alpha)
+    result = -log(A) / (A)^(n/2+alpha)
     return(result)
   }
 
@@ -78,13 +90,13 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = c(x)
-    A = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
-    result = 1 / (A)^(n/2+alpha+1)
+    result = -(n/2+alpha) / (A)^(n/2+alpha+1)
     return(result)
   }
 
-  func_over_expressed_d_delta <- function(
+  func_over_expressed_d_xi <- function(
     x,
     params)
   {
@@ -97,13 +109,13 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = c(x)
-    A = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (log(eta) + log(mu_g) - digamma(xi)) / (A)^(n/2+alpha)
     return(result)
   }
 
-  func_over_expressed_d_theta <- function(
+  func_over_expressed_d_eta <- function(
     x,
     params)
   {
@@ -116,7 +128,7 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = c(x)
-    A = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (xi/eta - mu_g) / (A)^(n/2+alpha)
     return(result)
@@ -135,7 +147,7 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = - c(x)
-    B = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = 1 / (B)^(n/2+alpha)
     return(result)
@@ -154,9 +166,9 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = - c(x)
-    B = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
-    result = log(B) / (B)^(n/2+alpha)
+    result = -log(B) / (B)^(n/2+alpha)
     return(result)
   }
 
@@ -173,13 +185,13 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = - c(x)
-    B = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
-    result = 1 / (B)^(n/2+alpha+1)
+    result = -(n/2+alpha) / (B)^(n/2+alpha+1)
     return(result)
   }
 
-  func_under_expressed_d_delta <- function(
+  func_under_expressed_d_xi <- function(
     x,
     params)
   {
@@ -192,13 +204,13 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = - c(x)
-    B = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (log(eta) + log(-mu_g) - digamma(xi)) / (B)^(n/2+alpha)
     return(result)
   }
 
-  func_under_expressed_d_theta <- function(
+  func_under_expressed_d_eta <- function(
     x,
     params)
   {
@@ -211,7 +223,7 @@ NGG_lp <- function(
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
     mu_g = - c(x)
-    B = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
+    B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (xi/eta + mu_g) / (B)^(n/2+alpha)
     return(result)
@@ -239,9 +251,11 @@ NGG_lp <- function(
     {
       saved_sampling = sample_gen_func(sample_gen_params)
     }
+
     result = sum(func(
                   saved_sampling,
                   params)) / length(saved_sampling)
+
     return(result)
   }
 
@@ -499,9 +513,23 @@ NGG_lp <- function(
     
     saved_sampling = sample_gen_func_gamma(sample_gen_params)
 
+    shared_denominator = apply(
+            cbind(
+              sum_dgl_by_l,
+              sum_dgl_square_by_l
+              ),
+            1,
+            run_monte_carlo_integral,
+            func_over_expressed,
+            params,
+            sample_gen_func_gamma,
+            sample_gen_params,
+            saved_sampling
+            )
+
     d_lambda = alpha * sum(
       tilde_z[,cluster] *
-      (log(beta) + digamma(n/2+alpha) - digamma(alpha) -
+      (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
        (
           apply(
             cbind(
@@ -516,27 +544,12 @@ NGG_lp <- function(
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_over_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     d_nu = beta * sum(
-      tilde_z[,cluster] * (
-      alpha/beta - (n/2 + alpha) *
+      tilde_z[,cluster] * 
+      (alpha/beta +
        (
           apply(
             cbind(
@@ -551,22 +564,7 @@ NGG_lp <- function(
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_over_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     d_delta = xi * sum(
@@ -580,28 +578,13 @@ NGG_lp <- function(
               ),
             1,
             run_monte_carlo_integral,
-            func_over_expressed_d_delta,
+            func_over_expressed_d_xi,
             params,
             sample_gen_func_gamma,
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_over_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     d_theta = eta * sum(
@@ -615,28 +598,13 @@ NGG_lp <- function(
               ),
             1,
             run_monte_carlo_integral,
-            func_over_expressed_d_theta,
+            func_over_expressed_d_eta,
             params,
             sample_gen_func_gamma,
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_over_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     result[1] = d_lambda
@@ -685,9 +653,23 @@ NGG_lp <- function(
 
     saved_sampling = sample_gen_func_gamma(sample_gen_params)
 
+    shared_denominator = apply(
+            cbind(
+              sum_dgl_by_l,
+              sum_dgl_square_by_l
+              ),
+            1,
+            run_monte_carlo_integral,
+            func_under_expressed,
+            params,
+            sample_gen_func_gamma,
+            sample_gen_params,
+            saved_sampling
+            )
+
     d_lambda = alpha * sum(
       tilde_z[,cluster] *
-      (log(beta) + digamma(n/2+alpha) - digamma(alpha) -
+      (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
        (
           apply(
             cbind(
@@ -702,27 +684,12 @@ NGG_lp <- function(
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_under_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     d_nu = beta * sum(
       tilde_z[,cluster] *
-      (alpha/beta - (n/2 + alpha) *
+      (alpha/beta +
        (
           apply(
             cbind(
@@ -737,22 +704,7 @@ NGG_lp <- function(
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_under_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     d_delta = xi * sum(
@@ -766,28 +718,13 @@ NGG_lp <- function(
               ),
             1,
             run_monte_carlo_integral,
-            func_under_expressed_d_delta,
+            func_under_expressed_d_xi,
             params,
             sample_gen_func_gamma,
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_under_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     d_theta = eta * sum(
@@ -801,28 +738,13 @@ NGG_lp <- function(
               ),
             1,
             run_monte_carlo_integral,
-            func_under_expressed_d_theta,
+            func_under_expressed_d_eta,
             params,
             sample_gen_func_gamma,
             sample_gen_params,
             saved_sampling
             )
-        )/
-       (
-          apply(
-            cbind(
-              sum_dgl_by_l,
-              sum_dgl_square_by_l
-              ),
-            1,
-            run_monte_carlo_integral,
-            func_under_expressed,
-            params,
-            sample_gen_func_gamma,
-            sample_gen_params,
-            saved_sampling
-            )
-        )
+        )/shared_denominator
       ))
 
     result[5] = d_lambda
@@ -1048,6 +970,11 @@ NGG_lp <- function(
   # end of for test
   #############################################################
 
+  if (verbose)
+  {
+    cat("starting EM>>\n")
+  }
+
   mleinfo = optim(par = psi, fn = negative_l_c, gr = gradient_negative_l_c, 
     t_pi = t_pi, sum_dgl_by_l = sum_dgl_by_l, sum_dgl_square_by_l = sum_dgl_square_by_l, 
     n = n, tilde_z = tilde_z, method = 'L-BFGS-B', 
@@ -1068,17 +995,19 @@ NGG_lp <- function(
     infinity)
 
   repeated_times = 0  
-  print("start NGG_lp loop")
 
   while (repeated_times<max_repeated_times)
   {
     repeated_times = repeated_times + 1
+
+    psi = mleinfo$par
+
     if (verbose)
     {
       print(c("repeated times:", repeated_times))
+      print(psi)
+      print(t_pi)
     }
-
-    psi = mleinfo$par
     
     tilde_z = get_tilde_z(
       psi, 
@@ -1087,12 +1016,6 @@ NGG_lp <- function(
       sum_dgl_square_by_l, 
       n,
       M)
-
-    if (verbose)
-    {
-      print(psi)
-      print(t_pi)
-    }
 
     last_mleinfo = mleinfo
     mleinfo = optim(par = psi, fn = negative_l_c, gr = gradient_negative_l_c, 
