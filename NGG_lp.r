@@ -417,6 +417,8 @@ NGG_lp <- function(
       sum_dgl_square_by_l, 
       n,
       M)
+    cat("max logf>>",max(logf),"\n")
+    cat("min logf>>",min(logf),"\n")
 
     result = 0
     result = result + sum(tilde_z[,1] * logf[,1], na.rm = TRUE)
@@ -776,6 +778,8 @@ NGG_lp <- function(
 
     result[9] = d_lambda
     result[10] = d_nu
+
+    cat("gradient_l_c>>\n",result,"\n")
 
     return (result)
   }

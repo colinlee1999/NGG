@@ -15,12 +15,12 @@ gen_data_by_NGG_lp <- function(G, n, psi, t_pi)
 
     cluster_info[row,1] = cluster
 
-    alpha = psi[cluster * 4 - 3]
-    beta = psi[cluster * 4 - 2]
+    alpha = exp(psi[cluster * 4 - 3])
+    beta = exp(psi[cluster * 4 - 2])
     if (cluster<3)
     {
-      xi = psi[cluster * 4 - 1]
-      eta = psi[cluster * 4]  
+      xi = exp(psi[cluster * 4 - 1])
+      eta = exp(psi[cluster * 4])
     }
 
     tau_g = rgamma(1, alpha, beta)

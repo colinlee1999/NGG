@@ -4,11 +4,10 @@ source('gen_data_by_NGG_lp.r')
 G = 10000
 n = 20
 
-psi = exp(c(
+psi = c(
 	2,1,2,1,
 	2,1,2,1,
-	2,1
-	))
+	2,1)
 
 t_pi = c(0.05, 0.05, 0.90)
 
