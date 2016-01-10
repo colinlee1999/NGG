@@ -15,6 +15,7 @@ NGG_lp <- function(
   M = 10000
   )
 {
+  print("start NGG_lp")
   G = nrow(E_Set)
   n = ncol(E_Set)
 
@@ -534,8 +535,8 @@ NGG_lp <- function(
       ))
 
     d_nu = beta * sum(
-      tilde_z[,cluster] *
-      (alpha/beta - (n/2 + alpha) *
+      tilde_z[,cluster] * (
+      alpha/beta - (n/2 + alpha) *
        (
           apply(
             cbind(
@@ -1067,6 +1068,7 @@ NGG_lp <- function(
     infinity)
 
   repeated_times = 0  
+  print("start NGG_lp loop")
 
   while (repeated_times<max_repeated_times)
   {
