@@ -12,4 +12,4 @@ psi = c(
 t_pi = c(0.05, 0.05, 0.90)
 
 E_Set = gen_data_by_NGG_lp(G, n, psi, t_pi)
-result = NGG_lp(E_Set, verbose = 1, is_sim = 1, M = 100)
+result = NGG_lp(E_Set, verbose = 1, is_sim = 1, M = 100, limma_prior = 0)

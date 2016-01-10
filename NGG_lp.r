@@ -3,16 +3,17 @@ library(iCheck)
 NGG_lp <- function(
   E_Set,
   b = c(2,2,2), 
-  t_pi_prior = c(0.05, 0.05, 0.90),
+  t_pi_prior = c(0.01, 0.01, 0.98),
   is_sim = 0, 
   verbose = 0,
   infinity = 1e100,
   converge_threshold = 1e-6,
-  param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,0,0,-6,-6),
-  param_limit_max = c(6,6,6,6,6,6,6,6,0,0,6,6),
+  param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
+  param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
   max_iteration_num_in_optim = 100,
   max_repeated_times = 500,
-  M = 10000
+  M = 10000,
+  limma_prior = 1
   )
 {
   G = nrow(E_Set)
@@ -419,6 +420,8 @@ NGG_lp <- function(
       M)
     cat("max logf>>",max(logf),"\n")
     cat("min logf>>",min(logf),"\n")
+    write.csv(psi, file = 'psi.csv')
+    write.csv(logf, file = 'logf.csv')
 
     result = 0
     result = result + sum(tilde_z[,1] * logf[,1], na.rm = TRUE)
@@ -832,65 +835,109 @@ NGG_lp <- function(
 
   column_names = colnames(fData(E_Set))
 
-  result_limma = lmFitPaired(
-    E_Set,
-    probeID.var = column_names[1],
-    gene.var = column_names[2],
-    chr.var = column_names[3],
-    verbose = FALSE)
+  if (limma_prior)
+  {
+    result_limma = lmFitPaired(
+      E_Set,
+      probeID.var = column_names[1],
+      gene.var = column_names[2],
+      chr.var = column_names[3],
+      verbose = FALSE)
 
-  frame_unsorted = result_limma$frame.unsorted
-  over_expressed_sub_script = frame_unsorted$pos[which(frame_unsorted$stats > 0 & frame_unsorted$p.adj < 0.05)]
-  under_expressed_sub_script = frame_unsorted$pos[which(frame_unsorted$stats < 0 & frame_unsorted$p.adj < 0.05)]
-  non_diff_sub_script = frame_unsorted$pos[which(frame_unsorted$p.adj >= 0.05)]
+    frame_unsorted = result_limma$frame.unsorted
+    over_expressed_sub_script = frame_unsorted$pos[which(frame_unsorted$stats > 0 & frame_unsorted$p.adj < 0.05)]
+    under_expressed_sub_script = frame_unsorted$pos[which(frame_unsorted$stats < 0 & frame_unsorted$p.adj < 0.05)]
+    non_diff_sub_script = frame_unsorted$pos[which(frame_unsorted$p.adj >= 0.05)]
 
-  t_pi_prior = c(
-    length(under_expressed_sub_script)/G,
-    length(over_expressed_sub_script)/G,
-    0)
-  t_pi_prior[3] = 1 - t_pi_prior[1] - t_pi_prior[2]
+    t_pi_prior = c(
+      length(under_expressed_sub_script)/G,
+      length(over_expressed_sub_script)/G,
+      0)
+    t_pi_prior[3] = 1 - t_pi_prior[1] - t_pi_prior[2]
 
-  over_expressed_E_Set = E_Set[over_expressed_sub_script]
-  under_expressed_E_Set = E_Set[under_expressed_sub_script]
-  non_diff_E_Set = E_Set[non_diff_sub_script]
+    over_expressed_E_Set = E_Set[over_expressed_sub_script]
+    under_expressed_E_Set = E_Set[under_expressed_sub_script]
+    non_diff_E_Set = E_Set[non_diff_sub_script]
 
-  #########################################
-  # cluster 1
-  data_matrix_of_E_Set = exprs(over_expressed_E_Set)
+    #########################################
+    # cluster 1
+    data_matrix_of_E_Set = exprs(over_expressed_E_Set)
 
-  median_dgl_by_l = apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
-  delta_1 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
-  theta_1 = log(median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2))  
+    median_dgl_by_l = apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
+    delta_1 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
+    theta_1 = log(median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2))  
 
-  temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
-  lambda_1 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
-  nu_1 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
-  # end of cluster 1
-  #########################################
+    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    lambda_1 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
+    nu_1 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
+    # end of cluster 1
+    #########################################
 
-  #########################################
-  # cluster 2
-  data_matrix_of_E_Set = exprs(under_expressed_E_Set)
+    #########################################
+    # cluster 2
+    data_matrix_of_E_Set = exprs(under_expressed_E_Set)
 
-  median_dgl_by_l = -apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
-  delta_2 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
-  theta_2 = log(median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
+    median_dgl_by_l = -apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
+    delta_2 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
+    theta_2 = log(median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
 
-  temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
-  lambda_2 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
-  nu_2 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
-  # end of cluster 2
-  #########################################
+    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    lambda_2 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
+    nu_2 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
+    # end of cluster 2
+    #########################################
 
-  #########################################
-  # cluster 3
-  data_matrix_of_E_Set = exprs(non_diff_E_Set)
+    #########################################
+    # cluster 3
+    data_matrix_of_E_Set = exprs(non_diff_E_Set)
 
-  temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
-  lambda_3 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
-  nu_3 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
-  # end of cluster 3
-  #########################################
+    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    lambda_3 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
+    nu_3 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
+    # end of cluster 3
+    #########################################
+  }
+  else
+  {
+    median_dgl_by_l = apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
+    sorted_median_dgl_by_l = sort(median_dgl_by_l)
+
+    median_dgl_by_l = sorted_median_dgl_by_l[ceiling(G*(1 - t_pi_prior[1])):G]
+
+    delta_1 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
+    temp = median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2)
+    if (temp<=0)
+    {
+      theta_1 = - infinity
+    }
+    else
+    {
+      theta_1 = log(temp)
+    }
+
+    median_dgl_by_l = -sorted_median_dgl_by_l[1:floor(G*t_pi_prior[2])]
+    delta_2 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
+    temp = median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2)
+    if (temp<=0)
+    {
+      theta_2 = - infinity
+    }
+    else
+    {
+      theta_2 = log(temp)
+    }
+
+    # median_dgl_by_l = sorted_median_dgl_by_l[(floor(G*t_pi_prior[2])+1):(ceiling(G*(1 - t_pi_prior[1]))-1)]
+
+    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    lambda_1 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
+    nu_1 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
+
+    lambda_2 = lambda_1
+    nu_2 = nu_1
+    lambda_3 = lambda_1
+    nu_3 = nu_1
+  }    
 
   data_matrix_of_E_Set = exprs(E_Set)
 
@@ -983,8 +1030,8 @@ NGG_lp <- function(
     t_pi = t_pi, sum_dgl_by_l = sum_dgl_by_l, sum_dgl_square_by_l = sum_dgl_square_by_l, 
     n = n, tilde_z = tilde_z, method = 'L-BFGS-B', 
     b = b, converge_threshold = converge_threshold, infinity = infinity, M = M,
-    # lower=param_limit_min, 
-    # upper=param_limit_max,
+    lower=param_limit_min, 
+    upper=param_limit_max,
     control = list(maxit = max_iteration_num_in_optim))
 
   t_pi = get_t_pi(
@@ -1026,8 +1073,8 @@ NGG_lp <- function(
       t_pi = t_pi, sum_dgl_by_l = sum_dgl_by_l, sum_dgl_square_by_l = sum_dgl_square_by_l, 
       n = n, tilde_z = tilde_z, method = 'L-BFGS-B', 
       b = b, converge_threshold = converge_threshold, infinity = infinity, M = M,
-      # lower=param_limit_min, 
-      # upper=param_limit_max,
+      lower=param_limit_min, 
+      upper=param_limit_max,
       control = list(maxit = max_iteration_num_in_optim))
 
     t_pi = get_t_pi(
