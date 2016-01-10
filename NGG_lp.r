@@ -9,7 +9,7 @@ NGG_lp <- function(
   infinity = 1e100,
   converge_threshold = 1e-6,
   param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
-  param_limit_max = c(6,6,6,6,6,6,6,6,6,6)
+  param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
   # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
   # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
   max_iteration_num_in_optim = 100,
