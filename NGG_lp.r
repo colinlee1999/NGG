@@ -8,8 +8,10 @@ NGG_lp <- function(
   verbose = 0,
   infinity = 1e100,
   converge_threshold = 1e-6,
-  param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
-  param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
+  param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
+  param_limit_max = c(6,6,6,6,6,6,6,6,6,6)
+  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
+  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
   max_iteration_num_in_optim = 100,
   max_repeated_times = 500,
   M = 10000,
@@ -420,8 +422,7 @@ NGG_lp <- function(
       M)
     cat("max logf>>",max(logf),"\n")
     cat("min logf>>",min(logf),"\n")
-    write.csv(psi, file = 'psi.csv')
-    write.csv(logf, file = 'logf.csv')
+    cat("psi>>\n",psi,"\n")
 
     result = 0
     result = result + sum(tilde_z[,1] * logf[,1], na.rm = TRUE)
