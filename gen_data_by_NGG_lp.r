@@ -1,3 +1,5 @@
+library(Biobase)
+
 gen_data_by_NGG_lp <- function(G, n, psi, t_pi)
 {
   data = matrix(, nrow = G, ncol = n)
