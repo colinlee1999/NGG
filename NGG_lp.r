@@ -8,8 +8,10 @@ NGG_lp <- function(
   verbose = 0,
   infinity = 1e100,
   converge_threshold = 1e-6,
-  param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
-  param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
+  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
+  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
+  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
+  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
   # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
   # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
   # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
@@ -422,9 +424,12 @@ NGG_lp <- function(
       sum_dgl_square_by_l, 
       n,
       M)
-    cat("max logf>>",max(logf),"\n")
-    cat("min logf>>",min(logf),"\n")
-    cat("psi>>\n",psi,"\n")
+    if (verbose)
+    {
+      cat("max logf>>",max(logf),"\n")
+      cat("min logf>>",min(logf),"\n")
+      cat("psi>>\n",psi,"\n")  
+    }    
 
     result = 0
     result = result + sum(tilde_z[,1] * logf[,1], na.rm = TRUE)
@@ -785,7 +790,10 @@ NGG_lp <- function(
     result[9] = d_lambda
     result[10] = d_nu
 
-    cat("gradient_l_c>>\n",result,"\n")
+    if (verbose)
+    {
+      cat("gradient_l_c>>\n",result,"\n")  
+    }    
 
     return (result)
   }
@@ -1059,8 +1067,8 @@ NGG_lp <- function(
     if (verbose)
     {
       print(c("repeated times:", repeated_times))
-      print(psi)
-      print(t_pi)
+      cat("psi>>\n",psi,'\n')
+      cat("t_pi>>\n",t_pi,'\n')
     }
     
     tilde_z = get_tilde_z(
