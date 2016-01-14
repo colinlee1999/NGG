@@ -22,17 +22,7 @@ NGG_lp <- function(
   limma_prior = 1
   )
 {
-  G = nrow(E_Set)
-  n = ncol(E_Set)
-
-  data_matrix_of_E_Set = exprs(E_Set)
-
-  # 'sum_dgl_by_l' is an G * 1 matrix, the summation result of every row of 'data_matrix_of_E_Set'
-  sum_dgl_by_l = apply(data_matrix_of_E_Set,1,sum, na.rm=TRUE)
-
-  # 'sum_dgl_square_by_l' is an G * 1 matrix, the summation of every squared elements of 'data_matrix_of_E_Set' by row
-  sum_dgl_square_by_l = apply(data_matrix_of_E_Set^2,1,sum, na.rm = TRUE)
-
+  
   get_A_B <- function(
     beta, 
     sum_dgl_by_l_i,
@@ -884,6 +874,19 @@ NGG_lp <- function(
 
     return (c(t1,t2,t3))
   }
+
+  # function body
+
+  G = nrow(E_Set)
+  n = ncol(E_Set)
+
+  data_matrix_of_E_Set = exprs(E_Set)
+
+  # 'sum_dgl_by_l' is an G * 1 matrix, the summation result of every row of 'data_matrix_of_E_Set'
+  sum_dgl_by_l = apply(data_matrix_of_E_Set,1,sum, na.rm=TRUE)
+
+  # 'sum_dgl_square_by_l' is an G * 1 matrix, the summation of every squared elements of 'data_matrix_of_E_Set' by row
+  sum_dgl_square_by_l = apply(data_matrix_of_E_Set^2,1,sum, na.rm = TRUE)
 
   column_names = colnames(fData(E_Set))
 
