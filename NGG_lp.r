@@ -28,15 +28,69 @@ NGG_lp <- function(
     sum_dgl_by_l_i,
     sum_dgl_square_by_l_i,
     n,
-    mu_g
-    )
+    mu_g)
   {
     result = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
 
     return(result)
   }
 
+  get_params <- function(
+    xi,
+    eta,
+    alpha,
+    beta,
+    n,
+    lower,
+    upper,
+    M,
+    sum_dgl_by_l_i,
+    sum_dgl_square_by_l_i)
+  {
+    result = list(
+      xi,
+      eta,
+      alpha,
+      beta,
+      n,
+      lower,
+      upper,
+      M,
+      0,
+      0)
+
+    names(result) = c(
+      "xi",
+      "eta",
+      "alpha",
+      "beta",
+      "n",
+      "lower",
+      "upper",
+      "M",
+      "sum_dgl_by_l_i",
+      "sum_dgl_square_by_l_i")
+
+    return(result)
+  }
+
+  get_sample_gen_params <- function(
+    xi,
+    eta)
+  {
+    result = list(
+      xi,
+      eta)
+
+    names(result) = c(
+      "shape",
+      "rate")
+
+    return(result)
+  }
+
   func_over_expressed <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -46,7 +100,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -56,6 +109,7 @@ NGG_lp <- function(
   }
 
   func_over_expressed_d_alpha <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -65,7 +119,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -75,6 +128,7 @@ NGG_lp <- function(
   }
 
   func_over_expressed_d_beta <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -84,7 +138,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -94,6 +147,7 @@ NGG_lp <- function(
   }
 
   func_over_expressed_d_xi <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -103,7 +157,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -113,6 +166,7 @@ NGG_lp <- function(
   }
 
   func_over_expressed_d_eta <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -122,7 +176,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -132,6 +185,7 @@ NGG_lp <- function(
   }
 
   func_under_expressed <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -141,7 +195,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -151,6 +204,7 @@ NGG_lp <- function(
   }
 
   func_under_expressed_d_alpha <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -160,7 +214,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -170,6 +223,7 @@ NGG_lp <- function(
   }
 
   func_under_expressed_d_beta <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -179,7 +233,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -189,6 +242,7 @@ NGG_lp <- function(
   }
 
   func_under_expressed_d_xi <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -198,7 +252,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -208,6 +261,7 @@ NGG_lp <- function(
   }
 
   func_under_expressed_d_eta <- function(
+    t,
     params)
   {
     xi = params$"xi"
@@ -217,7 +271,6 @@ NGG_lp <- function(
     n = params$'n'
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
-    t = params$'t'
 
     mu_g = t / (1 - t^2)
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
@@ -227,11 +280,11 @@ NGG_lp <- function(
   }
 
   func_gamma_cluster_1 <- function(
+    t,
     params)
   {
     alpha = params$'shape'
     beta = params$'rate'
-    t = params$'t'
     result = beta^alpha/gamma(alpha) * 
               (t/(1-t^2))^(alpha-1) * 
               exp(-beta * (t/(1-t^2))) * 
@@ -240,11 +293,11 @@ NGG_lp <- function(
   }
 
   func_gamma_cluster_2 <- function(
+    t,
     params)
   {
     alpha = params$'shape'
     beta = params$'rate'
-    t = params$'t'
     result = beta^alpha/gamma(alpha) * 
               (-t/(1-t^2))^(alpha-1) * 
               exp(-beta * (-t/(1-t^2))) * 
@@ -252,25 +305,14 @@ NGG_lp <- function(
     return(result)
   }
 
-  numerical_integral <- function(
-    dat,
+  func_synthesize <- function(
+    t,
     func,
     params,
     sample_gen_func,
-    sample_gen_params,
-    saved_sampling = NULL)
+    sample_gen_params)
   {
-    params$sum_dgl_by_l_i = dat[1]
-    params$sum_dgl_square_by_l_i = dat[2]
-    if (is.null(saved_sampling))
-    {
-      saved_sampling = sample_gen_func(sample_gen_params)
-    }
-    result = func(params) * saved_sampling
-    result = (2 * result - result[1] - result[length(result)]) / 2 / (length(result)-1)
-    result = sum(result)
-    t = params$'t'
-    result = result * (t[length(t)] - t[1])    
+    result = func(t, params) * sample_gen_func(t, sample_gen_params)
     return(result)
   }
 
@@ -279,16 +321,21 @@ NGG_lp <- function(
     func,
     params,
     sample_gen_func,
-    sample_gen_params,
-    saved_sampling = NULL)
+    sample_gen_params)
   {
-    numerical_integral(
-      dat,
-      func,
-      params,
-      sample_gen_func,
-      sample_gen_params,
-      saved_sampling)
+    params$sum_dgl_by_l_i = dat[1]
+    params$sum_dgl_square_by_l_i = dat[2]
+    result = integrate(
+              func_synthesize, 
+              lower = params$'lower', 
+              upper = params$'upper',
+              func,
+              params,
+              sample_gen_func,
+              sample_gen_params,
+              subdivisions = params$'M'
+              )
+    return(result$value)
   }
 
   lf123 <- function(
@@ -298,7 +345,7 @@ NGG_lp <- function(
     n,
     M)
   {
-    excerpt <- function(func_passed_in, cluster_1)
+    excerpt <- function(func_passed_in, func_passed_in_2, cluster_1)
     {
       xi = exp(delta)
       eta = exp(theta)
@@ -306,51 +353,30 @@ NGG_lp <- function(
       beta = exp(nu)
       if (cluster_1)
       {
-        interval_t = (1:(M-1))/M
+        lower = 0
+        upper = 1
       }
       else
       {
-        interval_t = ((1-M):-1)/M
+        lower = -1
+        upper = 0
       }
 
-      params = list(
+      params = get_params(
         xi,
         eta,
         alpha,
         beta,
         n,
-        interval_t,
+        lower,
+        upper,
+        M,
         0,
         0)
-      names(params) = c(
-        "xi",
-        "eta",
-        "alpha",
-        "beta",
-        "n",
-        "t",
-        "sum_dgl_by_l_i",
-        "sum_dgl_square_by_l_i")
 
-      sample_gen_params = list(
+      sample_gen_params = get_sample_gen_params(
         xi,
-        eta,
-        interval_t)
-      names(sample_gen_params) = c(
-        "shape",
-        "rate",
-        "t")
-
-      if (cluster_1)
-      {
-        saved_sampling = func_gamma_cluster_1(sample_gen_params)
-        sample_gen_func_gamma = func_gamma_cluster_1
-      }
-      else
-      {
-        saved_sampling = func_gamma_cluster_2(sample_gen_params)
-        sample_gen_func_gamma = func_gamma_cluster_2
-      }
+        eta)
 
       integral_result = apply(
         cbind(
@@ -361,9 +387,9 @@ NGG_lp <- function(
         run_integral,
         func_passed_in,
         params,
-        sample_gen_func_gamma,
-        sample_gen_params,
-        saved_sampling)
+        func_passed_in_2,
+        sample_gen_params
+        )
 
       result = alpha * log(beta) + lgamma(n/2 + alpha) - lgamma(alpha) - n/2 * log(2*pi) + log(integral_result)
       return(result)
@@ -375,7 +401,7 @@ NGG_lp <- function(
     delta = psi[3]
     theta = psi[4]
 
-    logf1 = excerpt(func_over_expressed, 1)
+    logf1 = excerpt(func_over_expressed, func_gamma_cluster_1, 1)
 
     #cluster 2
     lambda = psi[5]
@@ -383,7 +409,7 @@ NGG_lp <- function(
     delta = psi[7]
     theta = psi[8]
 
-    logf2 = excerpt(func_under_expressed, 0)
+    logf2 = excerpt(func_under_expressed, func_gamma_cluster_2, 0)
 
     #cluster 3
     lambda = psi[9]
@@ -522,37 +548,24 @@ NGG_lp <- function(
     beta = exp(nu)
     xi = exp(delta)
     eta = exp(theta)
-    interval_t = (1:(M-1))/M
 
-    params = list(
+    lower = 0
+    upper = 1
+
+    params = get_params(
       xi,
       eta,
       alpha,
       beta,
       n,
-      interval_t,
+      lower,
+      upper,
+      M,
       0,
       0)
-    names(params) = c(
-      "xi",
-      "eta",
-      "alpha",
-      "beta",
-      "n",
-      "t",
-      "sum_dgl_by_l_i",
-      "sum_dgl_square_by_l_i")
-
-    sample_gen_params = list(
+    sample_gen_params = get_sample_gen_params(
       xi,
-      eta,
-      interval_t)
-    names(sample_gen_params) = c(
-      "shape",
-      "rate",
-      "t")
-    
-    saved_sampling = func_gamma_cluster_1(sample_gen_params)
+      eta)
 
     shared_denominator = apply(
             cbind(
@@ -564,8 +577,7 @@ NGG_lp <- function(
             func_over_expressed,
             params,
             func_gamma_cluster_1,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
 
     d_lambda = alpha * sum(
@@ -582,8 +594,7 @@ NGG_lp <- function(
             func_over_expressed_d_alpha,
             params,
             func_gamma_cluster_1,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -602,8 +613,7 @@ NGG_lp <- function(
             func_over_expressed_d_beta,
             params,
             func_gamma_cluster_1,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -622,8 +632,7 @@ NGG_lp <- function(
             func_over_expressed_d_xi,
             params,
             func_gamma_cluster_1,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -642,8 +651,7 @@ NGG_lp <- function(
             func_over_expressed_d_eta,
             params,
             func_gamma_cluster_1,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -665,37 +673,25 @@ NGG_lp <- function(
     beta = exp(nu)
     xi = exp(delta)
     eta = exp(theta)
-    interval_t = ((1-M):-1)/M
 
-    params = list(
+    lower = -1
+    upper = 0
+
+    params = get_params(
       xi,
       eta,
       alpha,
       beta,
       n,
-      interval_t,
+      lower,
+      upper,
+      M,
       0,
-      0)
-    names(params) = c(
-      "xi",
-      "eta",
-      "alpha",
-      "beta",
-      "n",
-      "t",
-      "sum_dgl_by_l_i",
-      "sum_dgl_square_by_l_i")
+      0)    
 
-    sample_gen_params = list(
+    sample_gen_params = get_sample_gen_params(
       xi,
-      eta,
-      interval_t)
-    names(sample_gen_params) = c(
-      "shape",
-      "rate",
-      "t")
-
-    saved_sampling = func_gamma_cluster_2(sample_gen_params)
+      eta)
 
     shared_denominator = apply(
             cbind(
@@ -707,8 +703,7 @@ NGG_lp <- function(
             func_under_expressed,
             params,
             func_gamma_cluster_2,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
 
     d_lambda = alpha * sum(
@@ -725,8 +720,7 @@ NGG_lp <- function(
             func_under_expressed_d_alpha,
             params,
             func_gamma_cluster_2,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -745,8 +739,7 @@ NGG_lp <- function(
             func_under_expressed_d_beta,
             params,
             func_gamma_cluster_2,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -765,8 +758,7 @@ NGG_lp <- function(
             func_under_expressed_d_xi,
             params,
             func_gamma_cluster_2,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -785,8 +777,7 @@ NGG_lp <- function(
             func_under_expressed_d_eta,
             params,
             func_gamma_cluster_2,
-            sample_gen_params,
-            saved_sampling
+            sample_gen_params
             )
         )/shared_denominator
       ))
@@ -1012,67 +1003,69 @@ NGG_lp <- function(
 
   #############################################################
   # for test
+  if (0)
+  {
+    focus = 10
+    precision = 0.001
+    psi[focus] = psi[focus] - precision
+    f1 = l_c(
+      psi, 
+      t_pi, 
+      sum_dgl_by_l, 
+      sum_dgl_square_by_l, 
+      n, 
+      tilde_z, 
+      b, 
+      converge_threshold, 
+      infinity,
+      M)
+    psi[focus] = psi[focus] + precision
+    f2 = l_c(
+      psi, 
+      t_pi, 
+      sum_dgl_by_l, 
+      sum_dgl_square_by_l, 
+      n, 
+      tilde_z, 
+      b, 
+      converge_threshold, 
+      infinity,
+      M)
+    psi[focus] = psi[focus] + precision
+    f3 = l_c(
+      psi, 
+      t_pi, 
+      sum_dgl_by_l, 
+      sum_dgl_square_by_l, 
+      n, 
+      tilde_z, 
+      b, 
+      converge_threshold, 
+      infinity,
+      M)
 
-  # focus = 1
-  # precision = 0.01
-  # psi[focus] = psi[focus] - precision
-  # f1 = l_c(
-  #   psi, 
-  #   t_pi, 
-  #   sum_dgl_by_l, 
-  #   sum_dgl_square_by_l, 
-  #   n, 
-  #   tilde_z, 
-  #   b, 
-  #   converge_threshold, 
-  #   infinity,
-  #   M)
-  # psi[focus] = psi[focus] + precision
-  # f2 = l_c(
-  #   psi, 
-  #   t_pi, 
-  #   sum_dgl_by_l, 
-  #   sum_dgl_square_by_l, 
-  #   n, 
-  #   tilde_z, 
-  #   b, 
-  #   converge_threshold, 
-  #   infinity,
-  #   M)
-  # psi[focus] = psi[focus] + precision
-  # f3 = l_c(
-  #   psi, 
-  #   t_pi, 
-  #   sum_dgl_by_l, 
-  #   sum_dgl_square_by_l, 
-  #   n, 
-  #   tilde_z, 
-  #   b, 
-  #   converge_threshold, 
-  #   infinity,
-  #   M)
+    d = (f3 - f1)/(2 * precision)
+    print(c(f1,f2,f3))
+    cat("numerical>>",d,'\n')
 
-  # d = (f3 - f1)/(2 * precision)
-  # print(c(f1,f2,f3))
-  # cat("numerical>>",d,'\n')
+    psi[focus] = psi[focus] - precision
+    true_d = gradient_l_c(
+      psi, 
+      t_pi, 
+      sum_dgl_by_l, 
+      sum_dgl_square_by_l, 
+      n, 
+      tilde_z, 
+      b, 
+      converge_threshold, 
+      infinity,
+      M)
+    
+    cat("true>>",true_d[focus],'\n')
+    cat("diff>>",d - true_d[focus],'\n')
 
-  # psi[focus] = psi[focus] - precision
-  # true_d = gradient_l_c(
-  #   psi, 
-  #   t_pi, 
-  #   sum_dgl_by_l, 
-  #   sum_dgl_square_by_l, 
-  #   n, 
-  #   tilde_z, 
-  #   b, 
-  #   converge_threshold, 
-  #   infinity,
-  #   M)
-  
-  # cat("true>>",true_d[focus],'\n')
-  # cat("diff>>",d - true_d[focus],'\n')
-
-  # stop()
+    stop()
+  }
   # end of for test
   #############################################################
 
@@ -1164,6 +1157,7 @@ NGG_lp <- function(
   result = list(
     E_Set = E_Set, 
     mleinfo = mleinfo, 
-    t_pi = t_pi)
+    t_pi = t_pi,
+    repeated_times = repeated_times)
   invisible(result)
 }
