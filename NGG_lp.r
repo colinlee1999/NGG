@@ -1,36 +1,33 @@
 library(iCheck)
-library(parallel)
-
-NGG_lp <- function(
-  E_Set,
-  b = c(2,2,2), 
-  t_pi_prior = c(0.05, 0.05, 0.90),
-  is_sim = 0, 
-  verbose = 0,
-  infinity = 1e100,
-  converge_threshold = 1e-6,
-  # param_limit_min = c(-5,-5,-5,-5,-5,-5,-5,-5,-5,-5),
-  # param_limit_max = c(5,5,5,5,5,5,5,5,5,5),
-  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
-  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
-  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
-  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
-  # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
-  # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
-  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
-  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
-  max_iteration_num_in_optim = 100,
-  max_repeated_times = 500,
-  M = 1000,
-  limma_prior = 1,
-  cores = 4
-  )
-{
+library(foreach)
+library(doMC)
 
   apply <- function(X, MARGIN, FUN, ...)
   {
-    X = split(X, 1:nrow(X))
-    return(unlist(mclapply(X, FUN, ..., mc.cores = cores)))
+    num_rows = nrow(X)
+    X = split(X, 1:num_rows)
+
+    num_each_group = ceiling(num_rows/cores)
+
+    result = foreach (i = 1:cores) %dopar% {
+      if (i<cores)
+      {
+        temp_data = X[((i-1)*num_each_group+1):(i*num_each_group)]
+      }
+      else
+      {
+        temp_data = X[((i-1)*num_each_group+1):num_rows]
+      }
+      temp_result = rep(0,length(temp_data))
+      for (j in 1:length(temp_data))
+      {
+        temp_result[j] = sum(rnorm(1000))+1#FUN(unlist(temp_data[j]),...)
+      }
+      temp_result
+    }
+
+    result = unlist(result)
+    return(result)
   }
   
   get_A_B <- function(
@@ -876,14 +873,44 @@ NGG_lp <- function(
     return (c(t1,t2,t3))
   }
 
+NGG_lp <- function(
+  E_Set,
+  b = c(2,2,2), 
+  t_pi_prior = c(0.05, 0.05, 0.90),
+  is_sim = 0, 
+  verbose = 0,
+  infinity = 1e100,
+  converge_threshold = 1e-6,
+  # param_limit_min = c(-5,-5,-5,-5,-5,-5,-5,-5,-5,-5),
+  # param_limit_max = c(5,5,5,5,5,5,5,5,5,5),
+  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
+  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
+  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
+  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
+  # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
+  # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
+  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
+  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
+  max_iteration_num_in_optim = 100,
+  max_repeated_times = 500,
+  M = 1000,
+  limma_prior = 1,
+  cores = 4
+  )
+{
+
+  cores <<- cores
+  verbose <<- verbose
+
   # function body
+  registerDoMC(cores = cores)
   G = nrow(E_Set)
   n = ncol(E_Set)
 
   data_matrix_of_E_Set = exprs(E_Set)
 
   # 'sum_dgl_by_l' is an G * 1 matrix, the summation result of every row of 'data_matrix_of_E_Set'
-  sum_dgl_by_l = apply(data_matrix_of_E_Set,1,sum, na.rm=TRUE)
+  sum_dgl_by_l = apply(data_matrix_of_E_Set,1,sum, na.rm=TRUE)  
 
   # 'sum_dgl_square_by_l' is an G * 1 matrix, the summation of every squared elements of 'data_matrix_of_E_Set' by row
   sum_dgl_square_by_l = apply(data_matrix_of_E_Set^2,1,sum, na.rm = TRUE)
