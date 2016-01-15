@@ -542,37 +542,37 @@ NGG_lp <- function(
     result = psi
     
     # cluster 1
-    lambda = psi[1]
-    nu = psi[2]
-    delta = psi[3]
-    theta = psi[4]
+    lambda_1 = psi[1]
+    nu_1 = psi[2]
+    delta_1 = psi[3]
+    theta_1 = psi[4]
 
-    cluster = 1
+    cluster_1 = 1
 
-    alpha = exp(lambda)
-    beta = exp(nu)
-    xi = exp(delta)
-    eta = exp(theta)
+    alpha_1 = exp(lambda_1)
+    beta_1 = exp(nu_1)
+    xi_1 = exp(delta_1)
+    eta_1 = exp(theta_1)
 
-    lower = 0
-    upper = 1
+    lower_1 = 0
+    upper_1 = 1
 
-    params = get_params(
-      xi,
-      eta,
-      alpha,
-      beta,
+    params_1 = get_params(
+      xi_1,
+      eta_1,
+      alpha_1,
+      beta_1,
       n,
-      lower,
-      upper,
+      lower_1,
+      upper_1,
       M,
       0,
       0)
-    sample_gen_params = get_sample_gen_params(
-      xi,
-      eta)
+    sample_gen_params_1 = get_sample_gen_params(
+      xi_1,
+      eta_1)
 
-    shared_denominator = apply(
+    shared_denominator_1 = apply(
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -580,218 +580,44 @@ NGG_lp <- function(
             1,
             run_integral,
             func_over_expressed,
-            params,
+            params_1,
             func_gamma_cluster_1,
-            sample_gen_params
+            sample_gen_params_1
             )
 
-    result_foreach = foreach(i = 1:4) %dopar%{
-      if (i == 1)
-      {
-        alpha * sum(
-          tilde_z[,cluster] *
-          (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_over_expressed_d_alpha,
-                params,
-                func_gamma_cluster_1,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
-      }
-      else if (i == 2)
-      {
-        beta * sum(
-          tilde_z[,cluster] * 
-          (alpha/beta +
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_over_expressed_d_beta,
-                params,
-                func_gamma_cluster_1,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
-      }
-      else if (i == 3)
-      {
-        xi * sum(
-          tilde_z[,cluster] *
-          (
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_over_expressed_d_xi,
-                params,
-                func_gamma_cluster_1,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
-      }
-      else if (i == 4)
-      {
-        eta * sum(
-          tilde_z[,cluster] *
-          (
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_over_expressed_d_eta,
-                params,
-                func_gamma_cluster_1,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
-      }
-    }
-
-    result_foreach = unlist(result_foreach)
-    d_lambda =  result_foreach[1]
-    d_nu = result_foreach[2]
-    d_delta = result_foreach[3]
-    d_theta = result_foreach[4]
-
-    # d_lambda = alpha * sum(
-    #   tilde_z[,cluster] *
-    #   (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_over_expressed_d_alpha,
-    #         params,
-    #         func_gamma_cluster_1,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    # d_nu = beta * sum(
-    #   tilde_z[,cluster] * 
-    #   (alpha/beta +
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_over_expressed_d_beta,
-    #         params,
-    #         func_gamma_cluster_1,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    # d_delta = xi * sum(
-    #   tilde_z[,cluster] *
-    #   (
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_over_expressed_d_xi,
-    #         params,
-    #         func_gamma_cluster_1,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    # d_theta = eta * sum(
-    #   tilde_z[,cluster] *
-    #   (
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_over_expressed_d_eta,
-    #         params,
-    #         func_gamma_cluster_1,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    result[1] = d_lambda
-    result[2] = d_nu
-    result[3] = d_delta
-    result[4] = d_theta
-
     # cluster 2
-    lambda = psi[5]
-    nu = psi[6]
-    delta = psi[7]
-    theta = psi[8]
+    lambda_2 = psi[5]
+    nu_2 = psi[6]
+    delta_2 = psi[7]
+    theta_2 = psi[8]
     
-    cluster = 2
+    cluster_2 = 2
 
-    alpha = exp(lambda)
-    beta = exp(nu)
-    xi = exp(delta)
-    eta = exp(theta)
+    alpha_2 = exp(lambda_2)
+    beta_2 = exp(nu_2)
+    xi_2 = exp(delta_2)
+    eta_2 = exp(theta_2)
 
-    lower = -1
-    upper = 0
+    lower_2 = -1
+    upper_2 = 0
 
-    params = get_params(
-      xi,
-      eta,
-      alpha,
-      beta,
+    params_2 = get_params(
+      xi_2,
+      eta_2,
+      alpha_2,
+      beta_2,
       n,
-      lower,
-      upper,
+      lower_2,
+      upper_2,
       M,
       0,
       0)    
 
-    sample_gen_params = get_sample_gen_params(
-      xi,
-      eta)
+    sample_gen_params_2 = get_sample_gen_params(
+      xi_2,
+      eta_2)
 
-    shared_denominator = apply(
+    shared_denominator_2 = apply(
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -799,184 +625,197 @@ NGG_lp <- function(
             1,
             run_integral,
             func_under_expressed,
-            params,
+            params_2,
             func_gamma_cluster_2,
-            sample_gen_params
+            sample_gen_params_2
             )
 
     result_foreach = foreach(i = 1:4) %dopar%{
       if (i == 1)
       {
-        alpha * sum(
-          tilde_z[,cluster] *
-          (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_under_expressed_d_alpha,
-                params,
-                func_gamma_cluster_2,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
+        c(
+          alpha_1 * sum(
+            tilde_z[,cluster_1] *
+            (log(beta_1) + digamma(n/2+alpha_1) - digamma(alpha_1) +
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_over_expressed_d_alpha,
+                  params_1,
+                  func_gamma_cluster_1,
+                  sample_gen_params_1
+                  )
+              )/shared_denominator_1
+            )),
+          alpha_2 * sum(
+            tilde_z[,cluster_2] *
+            (log(beta_2) + digamma(n/2+alpha_2) - digamma(alpha_2) +
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_under_expressed_d_alpha,
+                  params_2,
+                  func_gamma_cluster_2,
+                  sample_gen_params_2
+                  )
+              )/shared_denominator_2
+            ))
+          )
       }
       else if (i == 2)
       {
-        beta * sum(
-          tilde_z[,cluster] * 
-          (alpha/beta +
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_under_expressed_d_beta,
-                params,
-                func_gamma_cluster_2,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
+        c(
+          beta_1 * sum(
+            tilde_z[,cluster_1] * 
+            (alpha_1/beta_1 +
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_over_expressed_d_beta,
+                  params_1,
+                  func_gamma_cluster_1,
+                  sample_gen_params_1
+                  )
+              )/shared_denominator_1
+            )),
+          beta_2 * sum(
+            tilde_z[,cluster_2] * 
+            (alpha_2/beta_2 +
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_under_expressed_d_beta,
+                  params_2,
+                  func_gamma_cluster_2,
+                  sample_gen_params_2
+                  )
+              )/shared_denominator_2
+            ))
+          )
       }
       else if (i == 3)
       {
-        xi * sum(
-          tilde_z[,cluster] *
-          (
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_under_expressed_d_xi,
-                params,
-                func_gamma_cluster_2,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
+        c(
+          xi_1 * sum(
+            tilde_z[,cluster_1] *
+            (
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_over_expressed_d_xi,
+                  params_1,
+                  func_gamma_cluster_1,
+                  sample_gen_params_1
+                  )
+              )/shared_denominator_1
+            )),
+          xi_2 * sum(
+            tilde_z[,cluster_2] *
+            (
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_under_expressed_d_xi,
+                  params_2,
+                  func_gamma_cluster_2,
+                  sample_gen_params_2
+                  )
+              )/shared_denominator_2
+            ))
+          )
       }
       else if (i == 4)
       {
-        eta * sum(
-          tilde_z[,cluster] *
-          (
-           (
-              apply(
-                cbind(
-                  sum_dgl_by_l,
-                  sum_dgl_square_by_l
-                  ),
-                1,
-                run_integral,
-                func_under_expressed_d_eta,
-                params,
-                func_gamma_cluster_2,
-                sample_gen_params
-                )
-            )/shared_denominator
-          ))
+        c(
+          eta_1 * sum(
+            tilde_z[,cluster_1] *
+            (
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_over_expressed_d_eta,
+                  params_1,
+                  func_gamma_cluster_1,
+                  sample_gen_params_1
+                  )
+              )/shared_denominator_1
+            )),
+          eta_2 * sum(
+            tilde_z[,cluster_2] *
+            (
+             (
+                apply(
+                  cbind(
+                    sum_dgl_by_l,
+                    sum_dgl_square_by_l
+                    ),
+                  1,
+                  run_integral,
+                  func_under_expressed_d_eta,
+                  params_2,
+                  func_gamma_cluster_2,
+                  sample_gen_params_2
+                  )
+              )/shared_denominator_2
+            ))
+          )
       }
     }
 
     result_foreach = unlist(result_foreach)
-    d_lambda =  result_foreach[1]
-    d_nu = result_foreach[2]
-    d_delta = result_foreach[3]
-    d_theta = result_foreach[4]
+    
+    d_lambda_1 =  result_foreach[1]
+    d_nu_1 = result_foreach[3]
+    d_delta_1 = result_foreach[5]
+    d_theta_1 = result_foreach[7]
+    d_lambda_2 =  result_foreach[2]
+    d_nu_2 = result_foreach[4]
+    d_delta_2 = result_foreach[6]
+    d_theta_2 = result_foreach[8]
 
-    # d_lambda = alpha * sum(
-    #   tilde_z[,cluster] *
-    #   (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_under_expressed_d_alpha,
-    #         params,
-    #         func_gamma_cluster_2,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    # d_nu = beta * sum(
-    #   tilde_z[,cluster] *
-    #   (alpha/beta +
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_under_expressed_d_beta,
-    #         params,
-    #         func_gamma_cluster_2,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    # d_delta = xi * sum(
-    #   tilde_z[,cluster] *
-    #   (
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_under_expressed_d_xi,
-    #         params,
-    #         func_gamma_cluster_2,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    # d_theta = eta * sum(
-    #   tilde_z[,cluster] *
-    #   (
-    #    (
-    #       apply(
-    #         cbind(
-    #           sum_dgl_by_l,
-    #           sum_dgl_square_by_l
-    #           ),
-    #         1,
-    #         run_integral,
-    #         func_under_expressed_d_eta,
-    #         params,
-    #         func_gamma_cluster_2,
-    #         sample_gen_params
-    #         )
-    #     )/shared_denominator
-    #   ))
-
-    result[5] = d_lambda
-    result[6] = d_nu
-    result[7] = d_delta
-    result[8] = d_theta
+    result[1] = d_lambda_1
+    result[2] = d_nu_1
+    result[3] = d_delta_1
+    result[4] = d_theta_1
+    result[5] = d_lambda_2
+    result[6] = d_nu_2
+    result[7] = d_delta_2
+    result[8] = d_theta_2
 
     # cluster 3
     lambda = psi[9]
