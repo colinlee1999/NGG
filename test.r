@@ -3,7 +3,7 @@ source('gen_data_by_NGG_lp.r')
 
 start_time = proc.time()
 
-G = 10000
+G = 1000
 n = 30
 
 psi = c(
