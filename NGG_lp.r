@@ -2,7 +2,8 @@ library(iCheck)
 
   apply <- function(cl, X, MARGIN, FUN, ...)
   {
-    return(parApply(cl = cl, X, MARGIN, FUN, ...))
+    X = split(X, 1:nrow(X))
+    return(unlist(clusterApply(cl = cl, X, FUN, ...)))
   }
   
   get_A_B <- function(
