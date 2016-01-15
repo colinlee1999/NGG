@@ -106,7 +106,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = 1 / (A)^(n/2+alpha)
@@ -125,7 +125,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = -log(A) / (A)^(n/2+alpha)
@@ -144,7 +144,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = -(n/2+alpha) / (A)^(n/2+alpha+1)
@@ -163,7 +163,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (log(eta) + log(mu_g) - digamma(xi)) / (A)^(n/2+alpha)
@@ -182,7 +182,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     A = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (xi/eta - mu_g) / (A)^(n/2+alpha)
@@ -201,7 +201,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = 1 / (B)^(n/2+alpha)
@@ -220,7 +220,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = -log(B) / (B)^(n/2+alpha)
@@ -239,7 +239,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = -(n/2+alpha) / (B)^(n/2+alpha+1)
@@ -258,7 +258,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (log(eta) + log(-mu_g) - digamma(xi)) / (B)^(n/2+alpha)
@@ -277,7 +277,7 @@ NGG_lp <- function(
     sum_dgl_by_l_i = params$'sum_dgl_by_l_i'
     sum_dgl_square_by_l_i = params$'sum_dgl_square_by_l_i'
 
-    mu_g = t / (1 - t^2)
+    mu_g = t
     B = get_A_B(beta, sum_dgl_by_l_i, sum_dgl_square_by_l_i, n, mu_g)
 
     result = (xi/eta + mu_g) / (B)^(n/2+alpha)
@@ -291,9 +291,8 @@ NGG_lp <- function(
     alpha = params$'shape'
     beta = params$'rate'
     result = beta^alpha/gamma(alpha) * 
-              (t/(1-t^2))^(alpha-1) * 
-              exp(-beta * (t/(1-t^2))) * 
-              (t^2 + 1) / (t^2 - 1)^2
+              (t)^(alpha-1) * 
+              exp(-beta * (t))
     return(result)
   }
 
@@ -304,9 +303,8 @@ NGG_lp <- function(
     alpha = params$'shape'
     beta = params$'rate'
     result = beta^alpha/gamma(alpha) * 
-              (-t/(1-t^2))^(alpha-1) * 
-              exp(-beta * (-t/(1-t^2))) * 
-              (t^2 + 1) / (t^2 - 1)^2
+              (-t)^(alpha-1) * 
+              exp(-beta * (-t))
     return(result)
   }
 
@@ -359,11 +357,11 @@ NGG_lp <- function(
       if (cluster_1)
       {
         lower = 0
-        upper = 1
+        upper = Inf
       }
       else
       {
-        lower = -1
+        lower = -Inf
         upper = 0
       }
 
@@ -555,7 +553,7 @@ NGG_lp <- function(
     eta_1 = exp(theta_1)
 
     lower_1 = 0
-    upper_1 = 1
+    upper_1 = Inf
 
     params_1 = get_params(
       xi_1,
@@ -598,7 +596,7 @@ NGG_lp <- function(
     xi_2 = exp(delta_2)
     eta_2 = exp(theta_2)
 
-    lower_2 = -1
+    lower_2 = -Inf
     upper_2 = 0
 
     params_2 = get_params(
