@@ -2,6 +2,32 @@ library(iCheck)
 library(foreach)
 library(doMC)
 
+NGG_lp <- function(
+  E_Set,
+  b = c(2,2,2), 
+  t_pi_prior = c(0.05, 0.05, 0.90),
+  is_sim = 0, 
+  verbose = 0,
+  infinity = 1e100,
+  converge_threshold = 1e-6,
+  # param_limit_min = c(-5,-5,-5,-5,-5,-5,-5,-5,-5,-5),
+  # param_limit_max = c(5,5,5,5,5,5,5,5,5,5),
+  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
+  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
+  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
+  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
+  # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
+  # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
+  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
+  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
+  max_iteration_num_in_optim = 100,
+  max_repeated_times = 500,
+  M = 1000,
+  limma_prior = 1,
+  cores = 4
+  )
+{
+
   apply <- function(X, MARGIN, FUN, ...)
   {
     num_rows = nrow(X)
@@ -21,7 +47,7 @@ library(doMC)
       temp_result = rep(0,length(temp_data))
       for (j in 1:length(temp_data))
       {
-        temp_result[j] = sum(rnorm(1000))+1#FUN(unlist(temp_data[j]),...)
+        temp_result[j] = FUN(unlist(temp_data[j]),...)
       }
       temp_result
     }
@@ -872,35 +898,6 @@ library(doMC)
 
     return (c(t1,t2,t3))
   }
-
-NGG_lp <- function(
-  E_Set,
-  b = c(2,2,2), 
-  t_pi_prior = c(0.05, 0.05, 0.90),
-  is_sim = 0, 
-  verbose = 0,
-  infinity = 1e100,
-  converge_threshold = 1e-6,
-  # param_limit_min = c(-5,-5,-5,-5,-5,-5,-5,-5,-5,-5),
-  # param_limit_max = c(5,5,5,5,5,5,5,5,5,5),
-  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
-  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
-  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
-  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
-  # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
-  # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
-  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
-  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
-  max_iteration_num_in_optim = 100,
-  max_repeated_times = 500,
-  M = 1000,
-  limma_prior = 1,
-  cores = 4
-  )
-{
-
-  cores <<- cores
-  verbose <<- verbose
 
   # function body
   registerDoMC(cores = cores)
