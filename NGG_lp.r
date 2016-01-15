@@ -1,36 +1,8 @@
 library(iCheck)
-library(parallel)
 
-NGG_lp <- function(
-  E_Set,
-  b = c(2,2,2), 
-  t_pi_prior = c(0.05, 0.05, 0.90),
-  is_sim = 0, 
-  verbose = 0,
-  infinity = 1e100,
-  converge_threshold = 1e-6,
-  # param_limit_min = c(-5,-5,-5,-5,-5,-5,-5,-5,-5,-5),
-  # param_limit_max = c(5,5,5,5,5,5,5,5,5,5),
-  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
-  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
-  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
-  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
-  # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
-  # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
-  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
-  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
-  max_iteration_num_in_optim = 100,
-  max_repeated_times = 500,
-  M = 1000,
-  limma_prior = 1,
-  cores = 4
-  )
-{
-
-  apply <- function(X, MARGIN, FUN, ...)
+  apply <- function(cl, X, MARGIN, FUN, ...)
   {
-    X = split(X, 1:nrow(X))
-    return(unlist(mclapply(X, FUN, ..., mc.cores = cores)))
+    return(parApply(cl = cl, X, MARGIN, FUN, ...))
   }
   
   get_A_B <- function(
@@ -41,7 +13,6 @@ NGG_lp <- function(
     mu_g)
   {
     result = beta+(sum_dgl_square_by_l_i - 2*mu_g*sum_dgl_by_l_i + n * mu_g^2)/2
-
     return(result)
   }
 
@@ -353,7 +324,8 @@ NGG_lp <- function(
     sum_dgl_by_l, 
     sum_dgl_square_by_l, 
     n,
-    M)
+    M,
+    cl)
   {
     excerpt <- function(func_passed_in, func_passed_in_2, cluster_1)
     {
@@ -372,7 +344,7 @@ NGG_lp <- function(
         upper = 0
       }
 
-      params = get_params(
+      params <<- get_params(
         xi,
         eta,
         alpha,
@@ -384,11 +356,14 @@ NGG_lp <- function(
         0,
         0)
 
-      sample_gen_params = get_sample_gen_params(
+      sample_gen_params <<- get_sample_gen_params(
         xi,
         eta)
 
-      integral_result = apply(
+      clusterExport(cl, 'params')
+      clusterExport(cl, 'sample_gen_params')
+
+      integral_result = apply(cl,
         cbind(
           sum_dgl_by_l,
           sum_dgl_square_by_l
@@ -445,15 +420,17 @@ NGG_lp <- function(
     sum_dgl_by_l, 
     sum_dgl_square_by_l, 
     n,
-    M)
+    M,
+    cl)
   {
     logf = lf123(
       psi, 
       sum_dgl_by_l, 
       sum_dgl_square_by_l, 
       n, 
-      M)
-    max_logf = apply(logf, 1, max, na.rm = TRUE)
+      M,
+      cl)
+    max_logf = apply(cl,logf, 1, max, na.rm = TRUE)
     t1 = t_pi[1] * exp(logf[,1] - max_logf)
     t2 = t_pi[2] * exp(logf[,2] - max_logf)
     t3 = t_pi[3] * exp(logf[,3] - max_logf)
@@ -473,7 +450,8 @@ NGG_lp <- function(
     b, 
     converge_threshold, 
     infinity,
-    M)
+    M,
+    cl)
   {
     # if (t_pi[1]<converge_threshold && t_pi[2]<converge_threshold) return (-infinity)
     # if (t_pi[1]<converge_threshold && t_pi[3]<converge_threshold) return (-infinity)
@@ -484,13 +462,14 @@ NGG_lp <- function(
       sum_dgl_by_l, 
       sum_dgl_square_by_l, 
       n,
-      M)
-    if (verbose)
-    {
-      cat("max logf>>",max(logf),"\n")
-      cat("min logf>>",min(logf),"\n")
-      cat("psi>>\n",psi,"\n")  
-    }    
+      M,
+      cl)
+    # if (verbose)
+    # {
+    #   cat("max logf>>",max(logf),"\n")
+    #   cat("min logf>>",min(logf),"\n")
+    #   cat("psi>>\n",psi,"\n")  
+    # }    
 
     result = 0
     result = result + sum(tilde_z[,1] * logf[,1], na.rm = TRUE)
@@ -517,7 +496,8 @@ NGG_lp <- function(
     b, 
     converge_threshold, 
     infinity,
-    M)
+    M,
+    cl)
   {
     return (-l_c(
       psi, 
@@ -529,7 +509,8 @@ NGG_lp <- function(
       b, 
       converge_threshold, 
       infinity,
-      M))
+      M,
+      cl))
   }
 
   gradient_l_c <- function(
@@ -542,7 +523,8 @@ NGG_lp <- function(
     b, 
     converge_threshold, 
     infinity,
-    M)
+    M,
+    cl)
   {
     result = psi
     
@@ -562,7 +544,7 @@ NGG_lp <- function(
     lower = 0
     upper = 1
 
-    params = get_params(
+    params <<- get_params(
       xi,
       eta,
       alpha,
@@ -573,11 +555,14 @@ NGG_lp <- function(
       M,
       0,
       0)
-    sample_gen_params = get_sample_gen_params(
+    sample_gen_params <<- get_sample_gen_params(
       xi,
       eta)
 
-    shared_denominator = apply(
+    clusterExport(cl, 'params')
+    clusterExport(cl, 'sample_gen_params')
+
+    shared_denominator = apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -594,7 +579,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -613,7 +598,7 @@ NGG_lp <- function(
       tilde_z[,cluster] * 
       (alpha/beta +
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -632,7 +617,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -651,7 +636,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -687,7 +672,7 @@ NGG_lp <- function(
     lower = -1
     upper = 0
 
-    params = get_params(
+    params <<- get_params(
       xi,
       eta,
       alpha,
@@ -699,11 +684,14 @@ NGG_lp <- function(
       0,
       0)    
 
-    sample_gen_params = get_sample_gen_params(
+    sample_gen_params <<- get_sample_gen_params(
       xi,
       eta)
 
-    shared_denominator = apply(
+    clusterExport(cl, 'params')
+    clusterExport(cl, 'sample_gen_params')
+
+    shared_denominator = apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -720,7 +708,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (log(beta) + digamma(n/2+alpha) - digamma(alpha) +
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -739,7 +727,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (alpha/beta +
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -758,7 +746,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -777,7 +765,7 @@ NGG_lp <- function(
       tilde_z[,cluster] *
       (
        (
-          apply(
+          apply(cl,
             cbind(
               sum_dgl_by_l,
               sum_dgl_square_by_l
@@ -822,10 +810,10 @@ NGG_lp <- function(
     result[9] = d_lambda
     result[10] = d_nu
 
-    if (verbose)
-    {
-      cat("gradient_l_c>>\n",result,"\n")  
-    }    
+    # if (verbose)
+    # {
+    #   cat("gradient_l_c>>\n",result,"\n")  
+    # }    
 
     return (result)
   }
@@ -840,7 +828,8 @@ NGG_lp <- function(
     b, 
     converge_threshold, 
     infinity,
-    M)
+    M,
+    cl)
   {
     return (-gradient_l_c(
       psi, 
@@ -852,7 +841,8 @@ NGG_lp <- function(
       b, 
       converge_threshold, 
       infinity,
-      M))
+      M,
+      cl))
   }
 
   get_t_pi <- function(
@@ -876,17 +866,52 @@ NGG_lp <- function(
     return (c(t1,t2,t3))
   }
 
+NGG_lp <- function(
+  E_Set,
+  b = c(2,2,2), 
+  t_pi_prior = c(0.05, 0.05, 0.90),
+  is_sim = 0, 
+  verbose = 0,
+  infinity = 1e100,
+  converge_threshold = 1e-6,
+  # param_limit_min = c(-5,-5,-5,-5,-5,-5,-5,-5,-5,-5),
+  # param_limit_max = c(5,5,5,5,5,5,5,5,5,5),
+  param_limit_min = c(-3,-3,-3,-3,-3,-3,-3,-3,-3,-3),
+  param_limit_max = c(3,3,3,3,3,3,3,3,3,3),
+  # param_limit_min = c(-2,-2,-2,-2,-2,-2,-2,-2,-2,-2),
+  # param_limit_max = c(2,2,2,2,2,2,2,2,2,2),
+  # param_limit_min = c(-6,-6,-6,-6,-6,-6,-6,-6,-6,-6),
+  # param_limit_max = c(6,6,6,6,6,6,6,6,6,6),
+  # param_limit_min = c(-10,-10,-10,-10,-10,-10,-10,-10,-10,-10),
+  # param_limit_max = c(10,10,10,10,10,10,10,10,10,10),
+  max_iteration_num_in_optim = 100,
+  max_repeated_times = 500,
+  M = 1000,
+  limma_prior = 1,
+  cores = 4
+  )
+{
   # function body
+  cl <- makeCluster(cores)
+  clusterEvalQ(cl, {
+      library("Biobase")
+      library("iCheck")
+      library("clues")
+      source('NGG_lp.r')
+      library("base")
+      library("stats")
+    })
+  
   G = nrow(E_Set)
   n = ncol(E_Set)
 
   data_matrix_of_E_Set = exprs(E_Set)
 
   # 'sum_dgl_by_l' is an G * 1 matrix, the summation result of every row of 'data_matrix_of_E_Set'
-  sum_dgl_by_l = apply(data_matrix_of_E_Set,1,sum, na.rm=TRUE)
+  sum_dgl_by_l = apply(cl,data_matrix_of_E_Set,1,sum, na.rm=TRUE)
 
   # 'sum_dgl_square_by_l' is an G * 1 matrix, the summation of every squared elements of 'data_matrix_of_E_Set' by row
-  sum_dgl_square_by_l = apply(data_matrix_of_E_Set^2,1,sum, na.rm = TRUE)
+  sum_dgl_square_by_l = apply(cl,data_matrix_of_E_Set^2,1,sum, na.rm = TRUE)
 
   column_names = colnames(fData(E_Set))
 
@@ -918,11 +943,11 @@ NGG_lp <- function(
     # cluster 1
     data_matrix_of_E_Set = exprs(over_expressed_E_Set)
 
-    median_dgl_by_l = apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
+    median_dgl_by_l = apply(cl,data_matrix_of_E_Set, 1, median, na.rm=TRUE)
     delta_1 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
     theta_1 = log(median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2))  
 
-    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    temp_tau = 1 / (apply(cl,data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
     lambda_1 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
     nu_1 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
     # end of cluster 1
@@ -932,11 +957,11 @@ NGG_lp <- function(
     # cluster 2
     data_matrix_of_E_Set = exprs(under_expressed_E_Set)
 
-    median_dgl_by_l = -apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
+    median_dgl_by_l = -apply(cl,data_matrix_of_E_Set, 1, median, na.rm=TRUE)
     delta_2 = log((median(median_dgl_by_l, na.rm=TRUE)^2)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
     theta_2 = log(median(median_dgl_by_l, na.rm=TRUE)/(mad(median_dgl_by_l, na.rm=TRUE)^2))
 
-    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    temp_tau = 1 / (apply(cl,data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
     lambda_2 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
     nu_2 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
     # end of cluster 2
@@ -946,7 +971,7 @@ NGG_lp <- function(
     # cluster 3
     data_matrix_of_E_Set = exprs(non_diff_E_Set)
 
-    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    temp_tau = 1 / (apply(cl,data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
     lambda_3 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
     nu_3 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
     # end of cluster 3
@@ -954,7 +979,7 @@ NGG_lp <- function(
   }
   else
   {
-    median_dgl_by_l = apply(data_matrix_of_E_Set, 1, median, na.rm=TRUE)
+    median_dgl_by_l = apply(cl,data_matrix_of_E_Set, 1, median, na.rm=TRUE)
     sorted_median_dgl_by_l = sort(median_dgl_by_l)
 
     median_dgl_by_l = sorted_median_dgl_by_l[ceiling(G*(1 - t_pi_prior[1])):G]
@@ -984,7 +1009,7 @@ NGG_lp <- function(
 
     # median_dgl_by_l = sorted_median_dgl_by_l[(floor(G*t_pi_prior[2])+1):(ceiling(G*(1 - t_pi_prior[1]))-1)]
 
-    temp_tau = 1 / (apply(data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
+    temp_tau = 1 / (apply(cl,data_matrix_of_E_Set, 1, mad, na.rm=TRUE)^2)
     lambda_1 = log((median(temp_tau, na.rm=TRUE)^2)/(mad(temp_tau, na.rm=TRUE)^2))
     nu_1 = log(median(temp_tau, na.rm=TRUE)/(mad(temp_tau, na.rm=TRUE)^2))
 
@@ -1008,7 +1033,8 @@ NGG_lp <- function(
     sum_dgl_by_l, 
     sum_dgl_square_by_l,
     n,
-    M)
+    M,
+    cl)
 
   #############################################################
   # for test
@@ -1027,7 +1053,8 @@ NGG_lp <- function(
       b, 
       converge_threshold, 
       infinity,
-      M)
+      M,
+      cl)
     psi[focus] = psi[focus] + precision
     f2 = l_c(
       psi, 
@@ -1039,7 +1066,8 @@ NGG_lp <- function(
       b, 
       converge_threshold, 
       infinity,
-      M)
+      M,
+      cl)
     psi[focus] = psi[focus] + precision
     f3 = l_c(
       psi, 
@@ -1051,7 +1079,8 @@ NGG_lp <- function(
       b, 
       converge_threshold, 
       infinity,
-      M)
+      M,
+      cl)
 
     d = (f3 - f1)/(2 * precision)
     print(c(f1,f2,f3))
@@ -1068,7 +1097,8 @@ NGG_lp <- function(
       b, 
       converge_threshold, 
       infinity,
-      M)
+      M,
+      cl)
     
     cat("true>>",true_d[focus],'\n')
     cat("diff>>",d - true_d[focus],'\n')
@@ -1086,7 +1116,7 @@ NGG_lp <- function(
   mleinfo = optim(par = psi, fn = negative_l_c, gr = gradient_negative_l_c, 
     t_pi = t_pi, sum_dgl_by_l = sum_dgl_by_l, sum_dgl_square_by_l = sum_dgl_square_by_l, 
     n = n, tilde_z = tilde_z, method = 'L-BFGS-B', 
-    b = b, converge_threshold = converge_threshold, infinity = infinity, M = M,
+    b = b, converge_threshold = converge_threshold, infinity = infinity, M = M, cl = cl,
     lower=param_limit_min, 
     upper=param_limit_max,
     control = list(maxit = max_iteration_num_in_optim))
@@ -1123,13 +1153,14 @@ NGG_lp <- function(
       sum_dgl_by_l, 
       sum_dgl_square_by_l, 
       n,
-      M)
+      M,
+      cl)
 
     last_mleinfo = mleinfo
     mleinfo = optim(par = psi, fn = negative_l_c, gr = gradient_negative_l_c, 
       t_pi = t_pi, sum_dgl_by_l = sum_dgl_by_l, sum_dgl_square_by_l = sum_dgl_square_by_l, 
       n = n, tilde_z = tilde_z, method = 'L-BFGS-B', 
-      b = b, converge_threshold = converge_threshold, infinity = infinity, M = M,
+      b = b, converge_threshold = converge_threshold, infinity = infinity, M = M, cl = cl,
       lower=param_limit_min, 
       upper=param_limit_max,
       control = list(maxit = max_iteration_num_in_optim))
@@ -1155,9 +1186,10 @@ NGG_lp <- function(
     sum_dgl_by_l, 
     sum_dgl_square_by_l, 
     n,
-    M)
+    M,
+    cl)
 
-  fData(E_Set)$est_cluster = apply(tilde_z,1,which.max)
+  fData(E_Set)$est_cluster = apply(cl,tilde_z,1,which.max)
   if (is_sim)
   {
     fData(E_Set)$flag = (fData(E_Set)$est_cluster == fData(E_Set)$true_cluster)
@@ -1168,6 +1200,7 @@ NGG_lp <- function(
     mleinfo = mleinfo, 
     t_pi = t_pi,
     repeated_times = repeated_times)
+  stopCluster(cl)
 
   invisible(result)
 }
