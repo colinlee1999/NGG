@@ -1,4 +1,5 @@
 library(iCheck)
+library(parallel)
 
 NGG_lp <- function(
   E_Set,
@@ -28,7 +29,8 @@ NGG_lp <- function(
 
   apply <- function(X, MARGIN, FUN, ...)
   {
-    return(parRapply(cl = cl, X, FUN, ...))
+    X = split(X, 1:nrow(X))
+    return(unlist(mclapply(X, FUN, ..., mc.cores = cores)))
   }
   
   get_A_B <- function(
@@ -331,8 +333,8 @@ NGG_lp <- function(
     sample_gen_func,
     sample_gen_params)
   {
-    params$sum_dgl_by_l_i = dat[1]
-    params$sum_dgl_square_by_l_i = dat[2]
+    params$'sum_dgl_by_l_i' = dat[1]
+    params$'sum_dgl_square_by_l_i' = dat[2]
     result = integrate(
               func_synthesize, 
               lower = params$'lower', 
@@ -875,9 +877,6 @@ NGG_lp <- function(
   }
 
   # function body
-
-  cl <- makeCluster(getOption("cl.cores", cores))
-
   G = nrow(E_Set)
   n = ncol(E_Set)
 
@@ -1169,5 +1168,6 @@ NGG_lp <- function(
     mleinfo = mleinfo, 
     t_pi = t_pi,
     repeated_times = repeated_times)
+
   invisible(result)
 }
