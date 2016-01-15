@@ -38,7 +38,7 @@ if (generate)
 {
 	E_Set = readRDS('E_Set.Rdata')
 }
-result = NGG_lp(E_Set, verbose = 1, is_sim = 1, M = 100, limma_prior = 0, cores = 4)
+result = NGG_lp(E_Set, verbose = 1, is_sim = 1, M = 100, limma_prior = 0, cores = 2)
 
 end_time = proc.time()
 result$runnint_time = end_time - start_time

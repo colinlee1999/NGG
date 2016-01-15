@@ -24,7 +24,7 @@ NGG_lp <- function(
   max_repeated_times = 500,
   M = 1000,
   limma_prior = 1,
-  cores = 4
+  cores = 2
   )
 {
   
