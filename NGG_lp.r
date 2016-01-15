@@ -19,9 +19,15 @@ NGG_lp <- function(
   max_iteration_num_in_optim = 100,
   max_repeated_times = 500,
   M = 1000,
-  limma_prior = 1
+  limma_prior = 1,
+  cores = 4
   )
 {
+
+  apply <- function(X, MARGIN, FUN, ...)
+  {
+    return(parRapply(cl = cl, X, FUN, ...))
+  }
   
   get_A_B <- function(
     beta, 
@@ -867,6 +873,8 @@ NGG_lp <- function(
   }
 
   # function body
+
+  cl <- makeCluster(getOption("cl.cores", cores))
 
   G = nrow(E_Set)
   n = ncol(E_Set)
