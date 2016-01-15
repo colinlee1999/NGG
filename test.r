@@ -38,11 +38,11 @@ if (generate)
 {
 	E_Set = readRDS('E_Set.Rdata')
 }
-result = NGG_lp(E_Set, verbose = 1, is_sim = 1, M = 100, limma_prior = 0, cores = 2, converge_threshold = 1e-4)
+result = NGG_lp(E_Set, verbose = 1, is_sim = 1, M = 10000, limma_prior = 0, cores = 2, converge_threshold = 1e-4)
 
 end_time = proc.time()
 result$running_time = end_time - start_time
-result$t_pi = t_pi
+result$t_pi_true = t_pi
 result$psi = psi
 result$G = G
 result$n = n
