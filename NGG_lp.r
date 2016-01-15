@@ -24,7 +24,8 @@ NGG_lp <- function(
   max_repeated_times = 500,
   M = 1000,
   limma_prior = 1,
-  cores = 2
+  cores = 2,
+  stop_on_error = FALSE
   )
 {
   
@@ -336,7 +337,8 @@ NGG_lp <- function(
               params,
               sample_gen_func,
               sample_gen_params,
-              subdivisions = params$'M'
+              subdivisions = params$'M',
+              stop.on.error = stop_on_error
               )
     return(result$value)
   }
