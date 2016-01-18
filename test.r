@@ -46,4 +46,5 @@ result$t_pi_true = t_pi
 result$psi = psi
 result$G = G
 result$n = n
+warnings()
 print(end_time - start_time)
